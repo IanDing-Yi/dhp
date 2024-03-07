@@ -155,7 +155,7 @@ def run_train(model_name, train_csv, val_csv, root_folder, save_path, disp):
     trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=10, shuffle=True, num_workers=0)
     testloader = torch.utils.data.DataLoader(test_dataset, batch_size=10, num_workers=0)
 
-    clf = get_pretrain_model('alexnet')
+    clf = get_pretrain_model(model_name)
     clf.to(device)
 
     criterion = nn.BCEWithLogitsLoss()
@@ -217,7 +217,7 @@ def run_train(model_name, train_csv, val_csv, root_folder, save_path, disp):
 
     return records
 
-def run_test(test_csv, root_folder, model_path, disp):
+def run_test(model_name, test_csv, root_folder, model_path, disp):
     # run test
     start_time = time.time()
 
@@ -231,7 +231,7 @@ def run_test(test_csv, root_folder, model_path, disp):
                                 ]))
     testloader = torch.utils.data.DataLoader(test_dataset, batch_size=10, num_workers=0)
     
-    clf = get_pretrain_model('alexnet')
+    clf = get_pretrain_model(model_name)
     clf.load_state_dict(torch.load(pth))
     clf.to(device)
     criterion = nn.BCEWithLogitsLoss()
@@ -245,6 +245,9 @@ def run_test(test_csv, root_folder, model_path, disp):
         print(time_elapsed)
     
     return cur_acc, conmx, val_loss
+
+
+# In[5]:
 
 
 def run(var_save_name, model_name, model_save_path,
@@ -262,11 +265,12 @@ def run(var_save_name, model_name, model_save_path,
                                   disp
                                   )
         print(var_save_name, 'train')
-        cur_acc, conmx, val_loss = run_test(test_csv,
-                                           base_path,
-                                           model_save_path,
-                                           disp
-                                           )
+        cur_acc, conmx, val_loss = run_test(model_name,
+                                            test_csv,
+                                            base_path,
+                                            model_save_path,
+                                            disp
+                                            )
         print(var_save_name, 'test')
         exps_rslts.append([cur_acc, conmx, val_loss, train_records])
         print(cur_acc)
@@ -276,3 +280,6 @@ def run(var_save_name, model_name, model_save_path,
             pickle.dump(exps_rslts, fp)
             print('exps rslts saved successfully to file: ', iter_count)
         
+#         print(var_save_name, iter_count)
+#         print(exps_rslts)
+
