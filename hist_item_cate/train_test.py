@@ -134,7 +134,7 @@ def comp_test(stage, clf, testloader, criterion, disp):
 #         print('F1:', f1)
     return (correct / total), conmx, sum(loss)/len(loss)
 
-def run_train(train_csv, val_csv, root_folder, save_path, disp):
+def run_train(model_name, train_csv, val_csv, root_folder, save_path, disp):
     start_time = time.time()
 
     test_csv = val_csv
@@ -229,7 +229,7 @@ def run_test(test_csv, root_folder, model_path, disp):
                                     Rescale((224,224)),
                                     ToTensor()
                                 ]))
-    testloader = torch.utils.data.DataLoader(aida17k_test_dataset, batch_size=10, num_workers=0)
+    testloader = torch.utils.data.DataLoader(test_dataset, batch_size=10, num_workers=0)
     
     clf = get_pretrain_model('alexnet')
     clf.load_state_dict(torch.load(pth))
@@ -246,24 +246,28 @@ def run_test(test_csv, root_folder, model_path, disp):
     
     return cur_acc, conmx, val_loss
 
-def run(var_save_name, run_count = 1, disp = False):
+
+def run(var_save_name, model_name, model_save_path,
+        train_csv, valid_csv, test_csv, base_path,
+        run_count = 1, disp = False):
     
     exps_rslts = []
     for iter_count in range(run_count):
-        #baseline
-        train_records = run_train('balanced_train.csv',
-                                  'balanced_valid.csv',
-                                  '../../dhp_data/artifact_restore_identify/LPW_cistern_collection_photos',
-                                  'balance_5_20p_alex',
+
+        train_records = run_train(model_name,
+                                  train_csv,
+                                  valid_csv,
+                                  base_path,
+                                  model_save_path,
                                   disp
                                   )
-        print('balanced', 'train')
-        cur_acc, conmx, val_loss = run_test('balanced_test.csv',
-                                           '../../dhp_data/artifact_restore_identify/LPW_cistern_collection_photos',
-                                           'balance_5_20p_alex',
+        print(var_save_name, 'train')
+        cur_acc, conmx, val_loss = run_test(test_csv,
+                                           base_path,
+                                           model_save_path,
                                            disp
                                            )
-        print('balanced', 'test')
+        print(var_save_name, 'test')
         exps_rslts.append([cur_acc, conmx, val_loss, train_records])
         print(cur_acc)
         display(conmx)
@@ -272,18 +276,3 @@ def run(var_save_name, run_count = 1, disp = False):
             pickle.dump(exps_rslts, fp)
             print('exps rslts saved successfully to file: ', iter_count)
         
-#         print(var_save_name, iter_count)
-#         print(exps_rslts)
-
-
-# In[ ]:
-
-def main():
-    run('balanced_train_5_val_20p', 1, True)
-
-
-# In[ ]:
-
-
-
-
